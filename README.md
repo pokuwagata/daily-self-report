@@ -5,7 +5,7 @@
 ## Installation
 
 ```
-go get pokuwagata/daily-self-report
+go get github.com/pokuwagata/dsr
 ```
 
 ## Usage
