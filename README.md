@@ -1,6 +1,6 @@
 # Daily self report
 
-何か書く
+![cli demo](./demo.gif)
 
 ## Installation
 
