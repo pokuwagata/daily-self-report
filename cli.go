@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -33,6 +34,11 @@ type question struct {
 const (
 	csvFilename = "record.csv"
 	qFileName   = "question.json"
+)
+
+var(
+	csvFilePath = filepath.Join(dsrPath, csvFilename)
+	qFilePath = filepath.Join(dsrPath, qFileName)
 )
 
 func numParseValidate(i string) (float64, error) {
@@ -91,7 +97,11 @@ func (c cli) run() error {
 
 	// 質問テンプレートを開く
 	log.Println("[INFO] open template json")
-	qfile, err := os.OpenFile(qFileName, os.O_RDONLY, 0444)
+	if _, err := os.Stat(qFilePath); os.IsNotExist(err) {
+		// json ファイルが存在しない場合はデフォルトの定義を利用する
+		qFilePath = qFileName
+	} 
+	qfile, err := os.OpenFile(qFilePath, os.O_RDONLY, 0444)
 	if err != nil {
 		return err
 	}
@@ -110,7 +120,7 @@ func (c cli) run() error {
 	}
 
 	log.Println("[INFO] open csv file")
-	file, err := os.OpenFile(csvFilename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	file, err := os.OpenFile(csvFilePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
@@ -145,7 +155,7 @@ func (c cli) run() error {
 	answers := []string{date}
 
 	// 質問を行う
-	fmt.Printf("%s について質問します📕\n", date)
+	fmt.Printf("%s について質問します🐦\n", date)
 	for i, q := range questions {
 		var validateFunc promptui.ValidateFunc
 		switch t := q.InputType; t {

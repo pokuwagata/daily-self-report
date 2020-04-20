@@ -32,9 +32,12 @@ $ dsr
 3
 ```
 
-`dsr` saves to csv file.
+`dsr` exports answers to csv file.
+`dsr` automatically creates `~/.dsr` directory and `record.csv` file.
 
-```
+```bash
+$ cat ~/.dsr/record.csv
+
 date, 1, 2, 3, 4, 5, 6
 2020-4-13, 5, 3, 2, 1, 3, 4
 2020-4-14, 7, 3, 3, 0, 3, 3
@@ -44,10 +47,11 @@ date, 1, 2, 3, 4, 5, 6
 
 ```bash
 $ dsr -d 2020-4-10
-2020/4/10 について質問します。
+2020-4-10 について質問します
 ```
 
-`dsr` reads json template for question.
+You can custom questions. `dsr` reads template from json file (`~/.dsr/question.json`)
+If json file dose not exist, `dsr` reads preset template.
 
 ```json
 [

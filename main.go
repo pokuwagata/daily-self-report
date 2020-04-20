@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -12,15 +13,25 @@ func main() {
 	os.Exit(run(os.Args[1:]))
 }
 
-const logFileName = "system.log"
+const (
+	logFileName = "system.log"
+	dsrDir = ".dsr"
+)
+
+var dsrPath = filepath.Join(os.Getenv("HOME"), dsrDir)
 
 func run(args []string) int {
+	if _, err := os.Stat(dsrPath); os.IsNotExist(err) {
+    os.Mkdir(dsrPath, 0777)
+	}
+
 	f, err := logSetup()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return 1
 	}
 	defer f.Close()
+
 
 	var date time.Time
 	var dateArg string
