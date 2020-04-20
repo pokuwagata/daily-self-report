@@ -1,0 +1,51 @@
+[
+  {
+    "order": 1,
+    "question": "睡眠時間は？（単位：時）",
+    "inputType": "number",
+    "min": 0,
+    "max": 24
+  },
+  {
+    "order": 2,
+    "question": "食事の回数は？",
+    "inputType": "number",
+    "min": 0,
+    "max": 10
+  },
+  {
+    "order": 3,
+    "question": "ストレス量は？（1~10）",
+    "inputType": "number",
+    "min": 1,
+    "max": 10
+  },
+  {
+    "order": 4,
+    "question": "感動の回数は？",
+    "inputType": "number",
+    "min": 0,
+    "max": 10
+  },
+  {
+    "order": 5,
+    "question": "幸福度は？（1~10）",
+    "inputType": "number",
+    "min": 1,
+    "max": 10
+  },
+  {
+    "order": 6,
+    "question": "カフェインの量は？（1~5）",
+    "inputType": "number",
+    "min": 1,
+    "max": 5
+  },
+  {
+    "order": 7,
+    "question": "その他自由入力",
+    "inputType": "string",
+    "min": 0,
+    "max": 100
+  }
+]

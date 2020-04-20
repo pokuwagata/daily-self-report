@@ -36,15 +36,38 @@ $ dsr
 
 ```
 date, 1, 2, 3, 4, 5, 6
-2020/4/13, 5, 3, 2, 1, 3, 4
-2020/4/14, 7, 3, 3, 0, 3, 3
+2020-4-13, 5, 3, 2, 1, 3, 4
+2020-4-14, 7, 3, 3, 0, 3, 3
 ```
 
-Use `-d` option to specify date.
+`dsr` has `-d` option to specify date.
 
 ```bash
-$ dsr -d 2020/4/10
+$ dsr -d 2020-4-10
 2020/4/10 について質問します。
+```
+
+`dsr` reads json template for question.
+
+```json
+[
+  {
+    "order": 1,
+    "question": "睡眠時間は？",
+    "inputType": "number",
+    "min": 0,
+    "max": 24
+  },
+  {
+    "order": 2,
+    "question": "今日の気分は？",
+    "inputType": "string",
+    "min": 0,
+    "max": 10
+  },
+  ...
+]
+
 ```
 
 ## Liense

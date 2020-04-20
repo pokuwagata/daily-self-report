@@ -1,3 +1,5 @@
 record.csv
 *.log
 todo.md
+__debug_bin
+.vscode

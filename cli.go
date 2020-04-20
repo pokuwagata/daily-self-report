@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/csv"
-	"errors"
+	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -22,55 +22,56 @@ type cli struct {
 }
 
 type question struct {
-	order    int
-	question string
-	validate promptui.ValidateFunc
+	Order     int     `json:"order"`
+	Question  string  `json:"question"`
+	InputType string  `json:"inputType"`
+	Min       float64 `json:"min"`
+	Max       float64 `json:"max"`
+	validate  promptui.ValidateFunc
 }
 
-const csvFilename = "record.csv"
-
-var (
-	numValidate = func(input string) (float64, error) {
-		n, err := strconv.ParseFloat(input, 64)
-		if err != nil {
-			return 0, errors.New("Invalid number")
-		}
-		return n, nil
-	}
-
-	questions = []question{
-		{
-			order:    1,
-			question: "睡眠時間は？",
-			validate: func(input string) error {
-				num, err := numValidate(input)
-				if err != nil {
-					return err
-				}
-				if num < 0 {
-					return errors.New("0以上の値を入力してください")
-				}
-				return nil
-			},
-		},
-		{
-			order:    2,
-			question: "食事の回数は？",
-			validate: func(input string) error {
-				num, err := numValidate(input)
-				if err != nil {
-					return err
-				}
-				if num < 0 {
-					return errors.New("0以上の値を入力してください")
-				}
-				return nil
-			},
-		},
-	}
+const (
+	csvFilename = "record.csv"
+	qFileName   = "question.json"
 )
 
-func buildHeader() []string {
+func numParseValidate(i string) (float64, error) {
+	n, err := strconv.ParseFloat(i, 64)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func numValidateFunc(min float64, max float64) func(string) error {
+	return func(i string) error {
+		num, err := numParseValidate(i)
+		if err != nil {
+			return err
+		}
+		if num < min {
+			return fmt.Errorf("%f 以上の値を入力してください", min)
+		}
+		if num > max {
+			return fmt.Errorf("%f 以下の値を入力してください", max)
+		}
+		return nil
+	}
+}
+
+func strValidateFunc(min int, max int) func(string) error {
+	return func(i string) error {
+		if len(i) < min {
+			return fmt.Errorf("%d 文字以上を入力してください", min)
+		}
+		if len(i) > max {
+			return fmt.Errorf("%d 文字以下の値を入力してください", max)
+		}
+		return nil
+	}
+}
+
+func buildHeader(questions []question) []string {
 	header := []string{"date"}
 	for i := range questions {
 		header = append(header, strconv.Itoa(i+1))
@@ -84,9 +85,29 @@ func parseDate(d time.Time) string {
 }
 
 func (c cli) run() error {
-	log.Println("[INFO] start main process")
+	var questions = []question{}
+	date := parseDate(c.option.date)
+	log.Printf("[INFO] start main process: %s", date)
 
-	date := parseDate(time.Now())
+	// 質問テンプレートを開く
+	log.Println("[INFO] open template json")
+	qfile, err := os.OpenFile(qFileName, os.O_RDONLY, 0444)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		log.Println("[INFO] close template json")
+		qfile.Close()
+	}()
+
+	qbyte, err := ioutil.ReadAll(qfile)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(qbyte, &questions); err != nil {
+		return err
+	}
 
 	log.Println("[INFO] open csv file")
 	file, err := os.OpenFile(csvFilename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
@@ -102,31 +123,41 @@ func (c cli) run() error {
 	r := csv.NewReader(file)
 	w := csv.NewWriter(file)
 
-	records, err := r.ReadAll();
-	
+	records, err := r.ReadAll()
+
 	if err != nil {
-		if err == io.EOF {
-			// ファイルが空の場合はヘッダーを作成する
-			if err := w.Write(buildHeader()); err != nil {
-				return err
-			}
-		} 
 		return err
 	}
 
+	if records == nil {
+		// ファイルが空の場合はヘッダーを作成する
+		if err := w.Write(buildHeader(questions)); err != nil {
+			return err
+		}
+	}
+
 	for _, row := range records {
-		if row[0] == date{
-			return fmt.Errorf("%s は記録済みです", date)
+		if row[0] == date {
+			return fmt.Errorf("%s は記録済みです💡", date)
 		}
 	}
 
 	answers := []string{date}
 
 	// 質問を行う
+	fmt.Printf("%s について質問します📕\n", date)
 	for i, q := range questions {
+		var validateFunc promptui.ValidateFunc
+		switch t := q.InputType; t {
+		case "number":
+			validateFunc = numValidateFunc(q.Min, q.Max)
+		case "string":
+			validateFunc = strValidateFunc(int(q.Min), int(q.Max))
+		}
+
 		prompt := promptui.Prompt{
-			Label:    q.question,
-			Validate: q.validate,
+			Label:    q.Question,
+			Validate: validateFunc,
 		}
 
 		log.Printf("[INFO] start q %d\n", i+1)
@@ -141,7 +172,6 @@ func (c cli) run() error {
 	}
 
 	// 結果を書き込む
-
 	if err := w.Write(answers); err != nil {
 		return err
 	}

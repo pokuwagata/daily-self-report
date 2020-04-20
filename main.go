@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -22,12 +22,24 @@ func run(args []string) int {
 	}
 	defer f.Close()
 
-	opt := option{
-		date: time.Now(),
+	var date time.Time
+	var dateArg string
+	flag.StringVar(&dateArg, "d", "", "specify date to record. e.g. 2006-1-2")
+	flag.Parse()
+	if len(dateArg) == 0 {
+		date = time.Now()
+	} else {
+		date, err = time.Parse("2006-1-2", dateArg)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			log.Fatalf(fmt.Sprintf("[ERROR] %v\n", err))
+		}
 	}
 
 	cli := cli{
-		option: opt,
+		option: option{
+			date: date,
+		}, 
 	}
 
 	log.Printf("[INFO] start pid: %d", os.Getpid())
