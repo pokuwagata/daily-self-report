@@ -1,3 +1,6 @@
+package main
+
+const presetQuestions = `
 [
   {
     "order": 1,
@@ -49,3 +52,4 @@
     "max": 100
   }
 ]
+`

@@ -18,7 +18,10 @@ const (
 	dsrDir = ".dsr"
 )
 
-var dsrPath = filepath.Join(os.Getenv("HOME"), dsrDir)
+var (
+	dsrPath = filepath.Join(os.Getenv("HOME"), dsrDir)
+	logFilePath = filepath.Join(dsrPath, logFileName)
+)
 
 func run(args []string) int {
 	if _, err := os.Stat(dsrPath); os.IsNotExist(err) {
@@ -65,7 +68,7 @@ func run(args []string) int {
 }
 
 func logSetup() (*os.File, error) {
-	f, err := os.OpenFile(logFileName, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	f, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 
 	if err != nil {
 		return nil, err

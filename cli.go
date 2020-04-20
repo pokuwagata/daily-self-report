@@ -36,9 +36,9 @@ const (
 	qFileName   = "question.json"
 )
 
-var(
+var (
 	csvFilePath = filepath.Join(dsrPath, csvFilename)
-	qFilePath = filepath.Join(dsrPath, qFileName)
+	qFilePath   = filepath.Join(dsrPath, qFileName)
 )
 
 func numParseValidate(i string) (float64, error) {
@@ -95,24 +95,25 @@ func (c cli) run() error {
 	date := parseDate(c.option.date)
 	log.Printf("[INFO] start main process: %s", date)
 
+	var qbyte []byte
 	// 質問テンプレートを開く
 	log.Println("[INFO] open template json")
 	if _, err := os.Stat(qFilePath); os.IsNotExist(err) {
 		// json ファイルが存在しない場合はデフォルトの定義を利用する
-		qFilePath = qFileName
-	} 
-	qfile, err := os.OpenFile(qFilePath, os.O_RDONLY, 0444)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		log.Println("[INFO] close template json")
-		qfile.Close()
-	}()
-
-	qbyte, err := ioutil.ReadAll(qfile)
-	if err != nil {
-		return err
+		qbyte = []byte(presetQuestions)
+	} else {
+		qfile, err := os.OpenFile(qFilePath, os.O_RDONLY, 0444)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			log.Println("[INFO] close template json")
+			qfile.Close()
+		}()
+		qbyte, err = ioutil.ReadAll(qfile)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := json.Unmarshal(qbyte, &questions); err != nil {
